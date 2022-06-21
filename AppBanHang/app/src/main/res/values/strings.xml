@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">App Quản Lí</string>
+    <string name="ten_sp">Tên sản phẩm</string>
+    <string name="gia_sp">Gía: 250000đ</string>
+    <string name="btn_them">Thêm vào giỏ hàng</string>
+    <string name="mo_ta">Mô tả chi tiết sản phẩm</string>
+    <string name="gh_trong">Giỏ hàng trống</string>
+    <string name="email">Email:</string>
+    <string name="password">Password:</string>
+    <string name="confrim_password">Confrim password:</string>
+    <string name="mobile">Mobile:</string>
+    <string name="username">Username:</string>
+    <string name="tong_tien">Tổng tiền:</string>
+    <string name="so_dt">Số điện thoại:</string>
+
+</resources>
