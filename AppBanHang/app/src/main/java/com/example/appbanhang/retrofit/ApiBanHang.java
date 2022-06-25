@@ -2,6 +2,7 @@ package com.example.appbanhang.retrofit;
 
 import com.example.appbanhang.model.DonHangModel;
 import com.example.appbanhang.model.LoaiSpModel;
+import com.example.appbanhang.model.MessageModel;
 import com.example.appbanhang.model.SanPhamMoiModel;
 import com.example.appbanhang.model.UserModel;
 
@@ -68,5 +69,16 @@ public interface ApiBanHang {
     @FormUrlEncoded
     Observable<SanPhamMoiModel> search(
             @Field("search") String search
+    );
+
+    @POST("insert.php")
+    @FormUrlEncoded
+    Observable<MessageModel> insertsp(
+            @Field("tensp") String tensp,
+            @Field("giasp") String giasp,
+            @Field("hinhanh") String hinhanh,
+            @Field("mota") String mota,
+            @Field("loai") int loai
+
     );
 }
