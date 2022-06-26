@@ -14,6 +14,9 @@
         android:theme="@style/Theme.AppBanHang"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".activity.EditSanPhamActivity"
+            android:exported="false" />
+        <activity
             android:name=".activity.ThemSPActivity"
             android:exported="false" />
         <activity
