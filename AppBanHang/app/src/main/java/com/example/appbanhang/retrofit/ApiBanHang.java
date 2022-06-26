@@ -7,10 +7,15 @@ import com.example.appbanhang.model.SanPhamMoiModel;
 import com.example.appbanhang.model.UserModel;
 
 import io.reactivex.rxjava3.core.Observable;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import retrofit2.Call;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
+import retrofit2.http.Multipart;
 import retrofit2.http.POST;
+import retrofit2.http.Part;
 
 public interface ApiBanHang {
     @GET("getloaisp.php")
@@ -71,7 +76,7 @@ public interface ApiBanHang {
             @Field("search") String search
     );
 
-    @POST("insert.php")
+    @POST("insertsp.php")
     @FormUrlEncoded
     Observable<MessageModel> insertsp(
             @Field("tensp") String tensp,
@@ -81,4 +86,8 @@ public interface ApiBanHang {
             @Field("loai") int loai
 
     );
+
+    @Multipart
+    @POST("upload.php")
+    Call<MessageModel> uploadFile(@Part MultipartBody.Part file);
 }
