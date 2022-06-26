@@ -158,11 +158,11 @@ public class ThemSPActivity extends AppCompatActivity {
 
     // Uploading Image/Video
     private void uploadMultipleFiles() {
-        // Map is used to multipart the file using okhttp3.RequestBody
-        File file = new File(mediaPath);
+        Uri uri = Uri.parse(mediaPath);
+        File file = new File(getPath(uri));
         // Parsing any Media type file
         RequestBody requestBody1 = RequestBody.create(MediaType.parse("*/*"), file);
-        MultipartBody.Part fileToUpload1 = MultipartBody.Part.createFormData("file1", file.getName(), requestBody1);
+        MultipartBody.Part fileToUpload1 = MultipartBody.Part.createFormData("file", file.getName(), requestBody1);
         Call<MessageModel> call = apiBanHang.uploadFile(fileToUpload1);
         call.enqueue(new Callback< MessageModel >() {
             @Override
@@ -170,7 +170,7 @@ public class ThemSPActivity extends AppCompatActivity {
                 MessageModel serverResponse = response.body();
                 if (serverResponse != null) {
                     if (serverResponse.isSuccess()) {
-                        Toast.makeText(getApplicationContext(), serverResponse.getMessage(), Toast.LENGTH_SHORT).show();
+                        hinhanh.setText(serverResponse.getName());
                     } else {
                         Toast.makeText(getApplicationContext(), serverResponse.getMessage(), Toast.LENGTH_SHORT).show();
                     }
