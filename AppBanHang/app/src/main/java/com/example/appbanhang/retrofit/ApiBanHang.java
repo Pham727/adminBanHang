@@ -76,6 +76,12 @@ public interface ApiBanHang {
             @Field("search") String search
     );
 
+    @POST("xoa.php")
+    @FormUrlEncoded
+    Observable<MessageModel> xoaSanPham(
+            @Field("id") int id
+    );
+
     @POST("insertsp.php")
     @FormUrlEncoded
     Observable<MessageModel> insertsp(
