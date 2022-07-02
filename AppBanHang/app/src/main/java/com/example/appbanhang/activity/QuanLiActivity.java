@@ -114,6 +114,9 @@ public class QuanLiActivity extends AppCompatActivity {
     }
 
     private void suaSanPham() {
+        Intent intent = new Intent(getApplicationContext(),ThemSPActivity.class);
+        intent.putExtra("sua",sanPhamSuaXoa);
+        startActivity(intent);
     }
 
     private void xoaSanPham() {

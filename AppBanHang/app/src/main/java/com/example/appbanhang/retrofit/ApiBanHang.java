@@ -93,6 +93,25 @@ public interface ApiBanHang {
 
     );
 
+    @POST("updatesp.php")
+    @FormUrlEncoded
+    Observable<MessageModel> updatesp(
+            @Field("tensp") String tensp,
+            @Field("giasp") String giasp,
+            @Field("hinhanh") String hinhanh,
+            @Field("mota") String mota,
+            @Field("loai") int loai,
+            @Field("id") int id
+
+    );
+
+    @POST("xoa.php")
+    @FormUrlEncoded
+    Observable<MessageModel> xoaSanPham(
+            @Field("id") int id
+    );
+
+
     @Multipart
     @POST("upload.php")
     Call<MessageModel> uploadFile(@Part MultipartBody.Part file);

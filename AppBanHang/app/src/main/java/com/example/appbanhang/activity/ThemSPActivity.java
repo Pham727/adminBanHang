@@ -24,6 +24,7 @@ import com.example.appbanhang.R;
 import com.example.appbanhang.adapter.DienThoaiAdapter;
 import com.example.appbanhang.databinding.ActivityThemSpactivityBinding;
 import com.example.appbanhang.model.MessageModel;
+import com.example.appbanhang.model.SanPhamMoi;
 import com.example.appbanhang.retrofit.ApiBanHang;
 import com.example.appbanhang.retrofit.RetrofitClient;
 import com.example.appbanhang.utils.Utils;
@@ -52,22 +53,48 @@ public class ThemSPActivity extends AppCompatActivity {
     ApiBanHang apiBanHang;
     CompositeDisposable compositeDisposable = new CompositeDisposable();
     String mediaPath;
+    //get product to edit.
+    SanPhamMoi sanPhamSua;
+    //if edit set flag = ture.
+    boolean flag;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_them_spactivity);
         apiBanHang = RetrofitClient.getInstance(Utils.BASE_URL).create(ApiBanHang.class);
+
         initView();
         intiData();
         initController();
+        Intent intent = getIntent();
+        sanPhamSua= (SanPhamMoi) intent.getSerializableExtra("sua");
+        if(sanPhamSua == null){
+            //Add product
+            flag= false;
+        }
+        else{
+            //edit product
+            flag = true;
+            btnThem.setText("Sửa sản phẩm");
+            tensp.setText(sanPhamSua.getTensp());
+            giasp.setText(sanPhamSua.getGiasp()+"");
+            mota.setText(sanPhamSua.getMota());
+            hinhanh.setText(sanPhamSua.getHinhanh());
+            spinner.setSelection(sanPhamSua.getLoai());
+        }
     }
 
     private void initController() {
         btnThem.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                themSanPham();
+                if(flag == false) {
+                    themSanPham();
+                }
+                else{
+                    suaSanPham();
+                }
             }
         });
         image.setOnClickListener(new View.OnClickListener() {
@@ -82,6 +109,70 @@ public class ThemSPActivity extends AppCompatActivity {
             }
         });
     }
+
+    private void themSanPham() {
+        String str_ten = tensp.getText().toString().trim();
+        String str_gia= giasp.getText().toString().trim();
+        String str_hinhanh = hinhanh.getText().toString().trim();
+        String str_mota = mota.getText().toString().trim();
+        if(TextUtils.isEmpty(str_ten)||TextUtils.isEmpty(str_gia)||TextUtils.isEmpty(str_gia)||TextUtils.isEmpty(str_gia)|| loai ==0 ){
+            Toast.makeText(getApplicationContext(), "Vui lòng nhập đầy đủ thông tin sản phẩm", Toast.LENGTH_SHORT).show();
+        }
+        else {
+            compositeDisposable.add(apiBanHang.insertsp(str_ten,str_gia,str_hinhanh,str_mota,loai)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                            messageModel -> {
+                                if(messageModel.isSuccess()){
+                                    Toast.makeText(getApplicationContext(), messageModel.getMessage(), Toast.LENGTH_SHORT).show();
+                                    Intent intent = new Intent(getApplicationContext(),MainActivity.class);
+                                    startActivity(intent);
+                                }
+                                else {
+                                    Toast.makeText(getApplicationContext(), messageModel.getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+
+                            },
+                            throwable -> {
+                                Toast.makeText(getApplicationContext(), throwable.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                    ));
+        }
+    }
+
+    private void suaSanPham() {
+        String str_ten = tensp.getText().toString().trim();
+        String str_gia= giasp.getText().toString().trim();
+        String str_hinhanh = hinhanh.getText().toString().trim();
+        String str_mota = mota.getText().toString().trim();
+        if(TextUtils.isEmpty(str_ten)||TextUtils.isEmpty(str_gia)||TextUtils.isEmpty(str_gia)||TextUtils.isEmpty(str_gia)|| loai ==0 ){
+            Toast.makeText(getApplicationContext(), "Vui lòng nhập đầy đủ thông tin sản phẩm", Toast.LENGTH_SHORT).show();
+        }
+        else {
+            compositeDisposable.add(apiBanHang.updatesp(str_ten,str_gia,str_hinhanh,str_mota,loai,sanPhamSua.getId())
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                            messageModel -> {
+                                if(messageModel.isSuccess()){
+                                    Toast.makeText(getApplicationContext(), messageModel.getMessage(), Toast.LENGTH_SHORT).show();
+                                    Intent intent = new Intent(getApplicationContext(),QuanLiActivity.class);
+                                    startActivity(intent);
+                                }
+                                else {
+                                    Toast.makeText(getApplicationContext(), messageModel.getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+
+                            },
+                            throwable -> {
+                                Toast.makeText(getApplicationContext(), throwable.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                    ));
+        }
+
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data){
         super.onActivityResult(requestCode,resultCode,data);
@@ -125,36 +216,7 @@ public class ThemSPActivity extends AppCompatActivity {
 
     }
 
-    private void themSanPham() {
-        String str_ten = tensp.getText().toString().trim();
-        String str_gia= giasp.getText().toString().trim();
-        String str_hinhanh = hinhanh.getText().toString().trim();
-        String str_mota = mota.getText().toString().trim();
-        if(TextUtils.isEmpty(str_ten)||TextUtils.isEmpty(str_gia)||TextUtils.isEmpty(str_gia)||TextUtils.isEmpty(str_gia)|| loai ==0 ){
-            Toast.makeText(getApplicationContext(), "Vui lòng nhập đầy đủ thông tin sản phẩm", Toast.LENGTH_SHORT).show();
-        }
-        else {
-            compositeDisposable.add(apiBanHang.insertsp(str_ten,str_gia,str_hinhanh,str_mota,loai)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                    messageModel -> {
-                        if(messageModel.isSuccess()){
-                            Toast.makeText(getApplicationContext(), messageModel.getMessage(), Toast.LENGTH_SHORT).show();
-                            Intent intent = new Intent(getApplicationContext(),MainActivity.class);
-                            startActivity(intent);
-                        }
-                        else {
-                            Toast.makeText(getApplicationContext(), messageModel.getMessage(), Toast.LENGTH_SHORT).show();
-                        }
 
-                    },
-                    throwable -> {
-                        Toast.makeText(getApplicationContext(), throwable.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-            ));
-        }
-    }
 
     // Uploading Image/Video
     private void uploadMultipleFiles() {
