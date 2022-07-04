@@ -12,6 +12,8 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -35,7 +37,10 @@ import com.example.appbanhang.model.User;
 import com.example.appbanhang.retrofit.ApiBanHang;
 import com.example.appbanhang.retrofit.RetrofitClient;
 import com.example.appbanhang.utils.Utils;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.nex3z.notificationbadge.NotificationBadge;
 
 import java.util.ArrayList;
@@ -68,10 +73,15 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         apiBanHang = RetrofitClient.getInstance(Utils.BASE_URL).create(ApiBanHang.class);
-
+        Paper.init(this);
+        if(Paper.book().read("user")!= null)
+        {
+            User user=Paper.book().read("user");
+            Utils.user_curent=user;
+        }
         AnhXa();
-        Init();
         ActionBar();
+        getToken();
         
         if(isConnected(this)){
             ActionViewFlipper();
@@ -84,14 +94,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void Init() {
-        Paper.init(this);
-        if(Paper.book().read("user")!= null)
-        {
-            User user=Paper.book().read("user");
-            Utils.user_curent=user;
-        }
-    }
 
     private void getEventClick() {
         listViewManHinhChinh.setOnItemClickListener(new AdapterView.OnItemClickListener(){
@@ -125,6 +127,7 @@ public class MainActivity extends AppCompatActivity {
                         //Xóa các key
                         Paper.book().delete("user");
                         Paper.book().delete("pass");
+                        FirebaseAuth.getInstance().signOut();
                         Intent dangnhap = new Intent(getApplicationContext(), DangNhapActivity.class);
                         startActivity(dangnhap);
                         break;
@@ -151,6 +154,29 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(),"Không kết nối được với server"+ throwable.getMessage(),Toast.LENGTH_LONG).show();
                 }
         ));
+    }
+
+    private void getToken(){
+        FirebaseMessaging.getInstance().getToken()
+                .addOnSuccessListener(new OnSuccessListener<String>() {
+                    @Override
+                    public void onSuccess(String s) {
+                        if(!TextUtils.isEmpty(s)){
+                            compositeDisposable.add(apiBanHang.updateToken(Utils.user_curent.getId(),s)
+                                    .subscribeOn(Schedulers.io())
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe(
+                                            messageModel -> {
+
+                                            },
+                                            throwable -> {
+                                                Log.d("log", throwable.getMessage());
+                                            }
+                                    ));
+
+                        }
+                    }
+                });
     }
 
     private void getLoaiSanPham() {

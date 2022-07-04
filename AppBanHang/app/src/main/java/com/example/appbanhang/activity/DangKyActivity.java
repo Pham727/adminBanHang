@@ -1,11 +1,13 @@
 package com.example.appbanhang.activity;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -14,6 +16,11 @@ import com.example.appbanhang.R;
 import com.example.appbanhang.retrofit.ApiBanHang;
 import com.example.appbanhang.retrofit.RetrofitClient;
 import com.example.appbanhang.utils.Utils;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
@@ -22,6 +29,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 public class DangKyActivity extends AppCompatActivity {
   EditText email,username,pass,repass,mobile;
   AppCompatButton button;
+  FirebaseAuth firebaseAuth;
   ApiBanHang apiBanHang;
   CompositeDisposable compositeDisposable = new CompositeDisposable();
     @Override
@@ -30,6 +38,7 @@ public class DangKyActivity extends AppCompatActivity {
         setContentView(R.layout.activity_dang_ky);
         initView();
         initControl();
+        firebaseAuth =FirebaseAuth.getInstance();
     }
 
     private void initView() {
@@ -69,8 +78,35 @@ public class DangKyActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(),"Bạn chưa nhập số điện thoại",Toast.LENGTH_SHORT).show();
         } else{
             if(txt_pass.equals(txt_repass)){
-             //Post dữ liệu để insert vào database user
-                compositeDisposable.add(apiBanHang.dangki(txt_email,txt_pass,txt_username,txt_mobile)
+             FirebaseUser user = firebaseAuth.getCurrentUser();
+                firebaseAuth.createUserWithEmailAndPassword(txt_email, txt_pass)
+                        .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                            @Override
+                            public void onComplete(@NonNull Task<AuthResult> task) {
+                                if (task.isSuccessful()) {
+                                    // Sign in success, update UI with the signed-in user's information
+                                    FirebaseUser user = firebaseAuth.getCurrentUser();
+                                    if(user != null){
+                                        postData(txt_email,txt_pass,txt_username,txt_mobile,user.getUid());
+                                    }
+                                    Intent intent = new Intent(getApplicationContext(),DangNhapActivity.class);
+                                    startActivity(intent);
+                                    Toast.makeText(getApplicationContext(), "Success.", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    // If sign in fails, display a message to the user.
+                                    Toast.makeText(getApplicationContext(), "Error"+ task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                                }
+                            }
+                        });
+            }else{
+                Toast.makeText(getApplicationContext(),"Mật khẩu không khớp ",Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    //Post dữ liệu để insert vào database user
+    private  void postData(String txt_email,String txt_pass,String txt_username,String txt_mobile,String uid){
+        compositeDisposable.add(apiBanHang.dangki(txt_email,txt_pass,txt_username,txt_mobile,uid)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
@@ -82,7 +118,7 @@ public class DangKyActivity extends AppCompatActivity {
                                 Intent dangnhap = new Intent(getApplicationContext(),DangNhapActivity.class);
                                 startActivity(dangnhap);
 
-                               //xuất thông báo thành công
+                                //xuất thông báo thành công
                                 Toast.makeText(getApplicationContext(),"Thành công",Toast.LENGTH_SHORT).show();
                                 finish();
                             }else{
@@ -94,10 +130,6 @@ public class DangKyActivity extends AppCompatActivity {
                             Toast.makeText(getApplicationContext(),throwable.getMessage(),Toast.LENGTH_SHORT).show();
                         }
                 ));
-            }else{
-                Toast.makeText(getApplicationContext(),"Mật khẩu không khớp",Toast.LENGTH_SHORT).show();
-            }
-        }
     }
     @Override
     protected  void onDestroy(){
